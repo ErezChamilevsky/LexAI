@@ -1,0 +1,10 @@
+08/12/25
+Model - Added the schema based on chatgpt schemas.txt, asked from gemini3 to implement the mongoose.
+Gemini says to add the max 3 chats per language in the controller logic.
+
+Asked from Gemini test, gave jest test.
+For now - all routes, sevices, controller, and schemas from Gemini. It prettey falters.
+#TASK - Change sever, try to load the mongodb and then run the jest. Commit and push only when code is fine.
+
+09/12/25
+User model - adding setting to the user - user language - corrections.

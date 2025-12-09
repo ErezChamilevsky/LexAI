@@ -1,0 +1,19 @@
+Method,Endpoint,Description
+POST,   http://localhost:3000/api/users/signup        Create a new account
+POST,   http://localhost:3000/api/users/language      Add a target language (Max 3)
+GET,    http://localhost:3000/api/users/:id            Get dashboard data
+POST,   http://localhost:3000/api/chats/start         Initialize a new chat session
+POST,   http://localhost:3000/api/chats/:id/message   Send text or voice msg
+GET,    http://localhost:3000/api/chats/:id            Load chat history
+POST,   http://localhost:3000/api/tests/submit        Submit test & update level
+GET,    http://localhost:3000/api/tests/history        View past test scores
+
+
+USER - createUser, getUserByID, updateLanguageLevel, 
+addLanguageToUser, addTestToUser, updatePremium, addChatToUser,
+ deleteUser, deleteLanguage, deleteChatOfUser, updateCorrections
+
+CHAT - createNewChat, getChatByID
+
+TEST - createWritingTest, createReadingTest, createSpeakingTest,
+createOverallTest, setGradeByTestID
