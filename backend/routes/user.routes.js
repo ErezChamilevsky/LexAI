@@ -4,7 +4,7 @@ const UserController = require('../controllers/user.controller');
 
 // CRUD & Basics
 router.post('/', UserController.createUser);
-router.get('/:id', UserController.getUserByID);
+router.get('/:email', UserController.getUserByEmail);
 router.delete('/:id', UserController.deleteUser);
 
 // Language Management
@@ -20,3 +20,6 @@ router.delete('/:id/chats/:chatId', UserController.deleteChatOfUser);
 router.put('/:id/premium', UserController.updatePremium);
 
 module.exports = router;
+
+//#TODO need to add chat to user.
+// #TODO need to had tests to user 

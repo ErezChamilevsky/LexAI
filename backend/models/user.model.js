@@ -17,15 +17,21 @@ const UserLanguageSchema = new Schema({
         writing: { type: String, enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'], default: 'A1' },
         speaking: { type: String, enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'], default: 'A1' }
     },
+    // Tests are already here (Correct)
     tests: [{
         type: Schema.Types.ObjectId,
         ref: 'Test'
+    }],
+    // MOVED: Chats are now specific to this language
+    chats: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Chat'
     }],
     corrections: [{
         type: Boolean,
         default: true
     }]
-}, { _id: true }); // Optional: set to true if you need to reference specific user-lang entries
+}, { _id: true });
 
 const UserSchema = new Schema({
     name: {
@@ -43,21 +49,15 @@ const UserSchema = new Schema({
         type: Boolean,
         default: false
     },
-    // Custom validator for max 3 languages
     languages: {
         type: [UserLanguageSchema],
         validate: [arrayLimit, '{PATH} exceeds the limit of 3 languages']
-    },
-    // References Chat documents
-    chats: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Chat'
-    }]
+    }
+    // REMOVED: chats from here
 }, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
-// Validator function
 function arrayLimit(val) {
     return val.length <= 3;
 }

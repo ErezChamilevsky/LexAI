@@ -22,7 +22,26 @@ const getChatByID = async (req, res) => {
     }
 };
 
+// 3. Add Message to Chat
+const addMessageToChat = async (req, res) => {
+    try {
+        const { role, content } = req.body;
+
+        const chat = await ChatService.addMessageToChat(
+            req.params.id,
+            role,
+            content
+        );
+
+        res.json(chat); // or res.json(chat.messages.at(-1))
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+
 module.exports = {
     createNewChat,
-    getChatByID
+    getChatByID,
+    addMessageToChat
 };

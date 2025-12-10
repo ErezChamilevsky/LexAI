@@ -11,9 +11,9 @@ const createUser = async (req, res) => {
 };
 
 // 2. Get User By ID
-const getUserByID = async (req, res) => {
+const getUserByEmail = async (req, res) => {
     try {
-        const user = await UserService.getUserByID(req.params.id);
+        const user = await UserService.getUserByEmail(req.params.email);
         if (!user) return res.status(404).json({ message: 'User not found' });
         res.json(user);
     } catch (error) {
@@ -42,6 +42,8 @@ const addLanguageToUser = async (req, res) => {
         res.status(400).json({ message: error.message }); // Handles "Limit reached" errors
     }
 };
+
+
 
 // 5. Update Premium Status
 const updatePremium = async (req, res) => {
@@ -100,6 +102,6 @@ const updateCorrections = async (req, res) => {
 // We generally do not expose them as direct API endpoints to prevent data inconsistency.
 
 module.exports = {
-    createUser, getUserByID, updateLanguageLevel, addLanguageToUser,
+    createUser, getUserByEmail, updateLanguageLevel, addLanguageToUser,
     updatePremium, deleteUser, deleteLanguage, deleteChatOfUser, updateCorrections
 };

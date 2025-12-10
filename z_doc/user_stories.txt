@@ -1,0 +1,13 @@
+משתמש נרשם - create new user
+משתמש מתחבר - getUserByID
+משתמש בוחר שפה - getUserLanguage 
+משתמש מוסיף שפה - createNewUserLanguage 
+משתמש מוחק שפה - deleteUserLanguage
+משתמש מתחיל צאט - createNewChat -> addChatToUser (?)
+משתמש ממשיך צאט - getChatByID
+משתמש מוחק צאט - in user
+משתמש שולח הודעה - addMassageToChat
+משתמש עושה מבחן - createNewTest -> addTestToUserLanguage
+משתמש שולח מבחן - updateTestGrade -> updateUesrLangugeLevel -> getLanguageByCode
+משתמש משנה הגדרות של corrections -> פ changeCorrectionOfLanguage -> get the language again
+משתמש רואה את ההתקדמות בdashboard -> פ getUserByID עם populate

@@ -8,3 +8,9 @@ For now - all routes, sevices, controller, and schemas from Gemini. It prettey f
 
 09/12/25
 User model - adding setting to the user - user language - corrections.
+
+10/12/25
+change the get user to be by email.
+moved the chats to be under userlanguage.
+added user stories and jest test for them (and more flow) - passed. seems that the backend without integration finished -
+therefore backend_without_integration merged to master.  

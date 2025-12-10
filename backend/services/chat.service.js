@@ -20,15 +20,15 @@ const createNewChat = async (userId, languageCode, initialMessage, topic) => {
         language_code: languageCode,
         topic: topic,
         messages: [{
-            role: 'user', // Assuming user starts, or change to 'system'
+            role: 'user',
             content: initialMessage
         }]
     });
 
     const savedChat = await chat.save();
 
-    // Link Chat to User
-    await UserService.addChatToUser(userId, savedChat._id);
+    // UPDATED: Pass languageCode so it gets added to the correct array
+    await UserService.addChatToUser(userId, languageCode, savedChat._id);
 
     return savedChat;
 };
@@ -38,7 +38,39 @@ const getChatByID = async (chatId) => {
     return await Chat.findById(chatId);
 };
 
+// 3. Add a Message to an Existing Chat
+const addMessageToChat = async (chatId, role, content) => {
+
+    // Validate role
+    if (!['user', 'assistant'].includes(role)) {
+        throw new Error('Invalid message role');
+    }
+
+    // Push message into messages array
+    const updatedChat = await Chat.findByIdAndUpdate(
+        chatId,
+        {
+            $push: {
+                messages: {
+                    role,
+                    content,
+                    timestamp: new Date()
+                }
+            }
+        },
+        { new: true } // return updated chat
+    );
+
+    if (!updatedChat) {
+        throw new Error('Chat not found');
+    }
+
+    return updatedChat;
+};
+
+
 module.exports = {
     createNewChat,
-    getChatByID
+    getChatByID,
+    addMessageToChat
 };
