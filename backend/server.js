@@ -2,7 +2,6 @@ require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors'); // Middleware to allow frontend to talk to backend
-
 // --- Import Routes ---
 // Ensure you create these route files in src/routes/
 const chatRoutes = require('./routes/chat.routes');

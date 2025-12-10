@@ -8,9 +8,9 @@ const createUser = async (userData) => {
     return await user.save();
 };
 
-// 2. Get User By ID
-const getUserByID = async (userId) => {
-    return await User.findById(userId).populate('languages.tests').populate('chats');
+// 2. Get User By email
+const getUserByEmail = async (mail) => {
+    return await User.findOne({ email: mail }).populate('languages.tests').populate('languages.chats');
 };
 
 // 3. Update Language Level (Updates specific skill + logic for overall could be added here)
@@ -54,6 +54,7 @@ const addLanguageToUser = async (userId, languageData) => {
     return await user.save();
 };
 
+
 // 5. Add Test To User (Internal helper, usually called by TestService)
 const addTestToUser = async (userId, languageCode, testId) => {
     // We use atomic operator $push to ensure data integrity
@@ -69,9 +70,20 @@ const updatePremium = async (userId, isPremium) => {
     return await User.findByIdAndUpdate(userId, { is_premium: isPremium }, { new: true });
 };
 
-// 7. Add Chat To User (Internal helper, usually called by ChatService)
-const addChatToUser = async (userId, chatId) => {
-    return await User.findByIdAndUpdate(userId, { $push: { chats: chatId } }, { new: true });
+// 7. Add Chat To User (Updated to target specific language)
+const addChatToUser = async (userId, languageCode, chatId) => {
+    // We use the positional operator ($) to find the language subdocument
+    // that matches the language_code and push the chatId into its 'chats' array.
+    return await User.findOneAndUpdate(
+        {
+            _id: userId,
+            "languages.language_code": languageCode
+        },
+        {
+            $push: { "languages.$.chats": chatId }
+        },
+        { new: true }
+    );
 };
 
 // 8. Delete User (Cascading delete recommended)
@@ -109,7 +121,7 @@ const updateCorrections = async (userId, languageCode, status) => {
 };
 
 module.exports = {
-    createUser, getUserByID, updateLanguageLevel, addLanguageToUser,
+    createUser, getUserByEmail, updateLanguageLevel, addLanguageToUser,
     addTestToUser, updatePremium, addChatToUser, deleteUser,
     deleteLanguage, deleteChatOfUser, updateCorrections
 };
