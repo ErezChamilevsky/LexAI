@@ -3,7 +3,10 @@ const ChatService = require('../services/chat.service');
 // 1. Create New Chat
 const createNewChat = async (req, res) => {
     try {
-        const { userId, languageCode, topic, message } = req.body;
+        // SECURITY: Extract userId from the validated token (req.user is set by auth middleware)
+        const userId = req.user._id;
+
+        const { languageCode, topic, message } = req.body;
         const chat = await ChatService.createNewChat(userId, languageCode, message, topic);
         res.status(201).json(chat);
     } catch (error) {
@@ -25,6 +28,14 @@ const getChatByID = async (req, res) => {
 // 3. Add Message to Chat
 const addMessageToChat = async (req, res) => {
     try {
+        // SECURITY: First, verify ownership before adding a message
+        const chatCheck = await ChatService.getChatByID(req.params.id);
+        if (!chatCheck) return res.status(404).json({ message: 'Chat not found' });
+
+        if (chatCheck.user_id.toString() !== req.user._id) {
+            return res.status(403).json({ message: 'Unauthorized action' });
+        }
+        
         const { role, content } = req.body;
 
         const chat = await ChatService.addMessageToChat(

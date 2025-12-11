@@ -7,6 +7,7 @@ const cors = require('cors'); // Middleware to allow frontend to talk to backend
 const chatRoutes = require('./routes/chat.routes');
 const userRoutes = require('./routes/user.routes');
 const testRoutes = require('./routes/test.routes');
+const authRoutes = require('./routes/auth.routes');
 
 const app = express();
 const PORT = process.env.PORT || 12345;
@@ -28,6 +29,7 @@ mongoose.connect(connectionString)
 app.use('/api/chats', chatRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tests', testRoutes);
+app.use('/auth', authRoutes);
 
 // --- Base Route (Health Check) ---
 app.get('/', (req, res) => {

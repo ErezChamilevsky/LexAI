@@ -3,7 +3,9 @@ const TestService = require('../services/test.service');
 // 1. Create Writing Test
 const createWritingTest = async (req, res) => {
     try {
-        const { userId, languageCode } = req.body;
+        const userId = req.user._id; // SECURITY: From Token
+        const { languageCode } = req.body;
+
         const test = await TestService.createWritingTest(userId, languageCode);
         res.status(201).json(test);
     } catch (error) {
@@ -14,7 +16,9 @@ const createWritingTest = async (req, res) => {
 // 2. Create Reading Test
 const createReadingTest = async (req, res) => {
     try {
-        const { userId, languageCode } = req.body;
+        const userId = req.user._id; // SECURITY: From Token
+        const { languageCode } = req.body;
+
         const test = await TestService.createReadingTest(userId, languageCode);
         res.status(201).json(test);
     } catch (error) {
@@ -25,7 +29,9 @@ const createReadingTest = async (req, res) => {
 // 3. Create Speaking Test
 const createSpeakingTest = async (req, res) => {
     try {
-        const { userId, languageCode } = req.body;
+        const userId = req.user._id; // SECURITY: From Token
+        const { languageCode } = req.body;
+
         const test = await TestService.createSpeakingTest(userId, languageCode);
         res.status(201).json(test);
     } catch (error) {
@@ -36,7 +42,9 @@ const createSpeakingTest = async (req, res) => {
 // 4. Create Overall (Placement) Test
 const createOverallTest = async (req, res) => {
     try {
-        const { userId, languageCode } = req.body;
+        const userId = req.user._id; // SECURITY: From Token
+        const { languageCode } = req.body;
+        
         const test = await TestService.createOverallTest(userId, languageCode);
         res.status(201).json(test);
     } catch (error) {
