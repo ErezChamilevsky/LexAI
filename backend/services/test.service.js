@@ -3,20 +3,31 @@ const UserService = require('./user.service');
 
 // Helper to handle creation logic
 const createGenericTest = async (userId, languageCode, type) => {
+
+    // --- STEP 1: LOCK USER ---
+    // If this fails, it throws an error and stops execution immediately
+    await UserService.startTestSession(userId);
+
+    // --- STEP 2: CREATE TEST ---
     const test = new Test({
         user_id: userId,
         language_code: languageCode,
         type: type,
-        result_level: 'A1', // Default, will be updated after grading
+        result_level: 'A1',
         score: 0
     });
 
-    const savedTest = await test.save();
-
-    // Add Test reference to User's specific language profile
-    await UserService.addTestToUser(userId, languageCode, savedTest._id);
-
-    return savedTest;
+    try {
+        const savedTest = await test.save();
+        // Add Test reference to User's specific language profile
+        await UserService.addTestToUser(userId, languageCode, savedTest._id);
+        return savedTest;
+    } catch (error) {
+        // ERROR HANDLING: If saving the test fails (e.g., DB error), 
+        // we must release the lock so the user isn't stuck.
+        await UserService.endTestSession(userId);
+        throw error;
+    }
 };
 
 // 1. Create Writing Test
@@ -64,6 +75,9 @@ const setGradeByTestID = async (testId, score, level, details) => {
     if (skillToUpdate) {
         await UserService.updateLanguageLevel(test.user_id, test.language_code, skillToUpdate, level);
     }
+
+    // The test is graded and finished, allow the user to take a new one.
+    await UserService.endTestSession(test.user_id);
 
     return test;
 };

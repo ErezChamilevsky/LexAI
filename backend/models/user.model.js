@@ -49,11 +49,15 @@ const UserSchema = new Schema({
         type: Boolean,
         default: false
     },
+    is_taking_test: {
+        type: Boolean,
+        default: false
+    },
     languages: {
         type: [UserLanguageSchema],
         validate: [arrayLimit, '{PATH} exceeds the limit of 3 languages']
     }
-    // REMOVED: chats from here
+    
 }, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });

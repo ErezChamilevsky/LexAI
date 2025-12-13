@@ -6,6 +6,7 @@
     "start": "node server.js",
     "test": "jest",
     "test:stories": "jest user_stories.test.js",
+    "test:test_flag": "jest test_flag.test.js", 
     "test:aouth": "jest test.spec.js"
   },
   "dependencies": {

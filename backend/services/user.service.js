@@ -120,8 +120,36 @@ const updateCorrections = async (userId, languageCode, status) => {
     );
 };
 
+// 12. Attempt to Start Test Session (Atomic Lock)
+const startTestSession = async (userId) => {
+    // This looks for a user with the ID *AND* is_taking_test = false
+    // If the user is already taking a test, this query will fail to find a match
+    const user = await User.findOneAndUpdate(
+        { _id: userId, is_taking_test: false }, // Condition
+        { is_taking_test: true },               // Update
+        { new: true }
+    );
+
+    if (!user) {
+        throw new Error('User is already taking a test. Please finish the current one first.');
+    }
+
+    return user;
+};
+
+// 13. End Test Session (Unlock)
+const endTestSession = async (userId) => {
+    return await User.findByIdAndUpdate(
+        userId,
+        { is_taking_test: false },
+        { new: true }
+    );
+};
+
 module.exports = {
     createUser, getUserByEmail, updateLanguageLevel, addLanguageToUser,
     addTestToUser, updatePremium, addChatToUser, deleteUser,
-    deleteLanguage, deleteChatOfUser, updateCorrections
+    deleteLanguage, deleteChatOfUser, updateCorrections,
+    // Export new functions
+    startTestSession, endTestSession
 };

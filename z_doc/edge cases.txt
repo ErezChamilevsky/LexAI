@@ -1,3 +1,7 @@
 opening multiple windows of the same chat/test - not giving the option to make few test stimulatingly and chats
 
 react2shell
+
+Important Note on "Abandoned" Tests
+Since we are using a persistent Database flag, if a user closes their browser without submitting the test (grading it), is_taking_test will remain true forever, and they will be locked out.
+To fix this, you should add a specific endpoint to "Abort" a test, or ensure your frontend calls an API when the user clicks an "Exit" button.

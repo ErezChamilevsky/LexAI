@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const UserController = require('../controllers/user.controller');
+const verifyToken = require('../middleware/auth.middleware');
+
+router.post('/', UserController.createUser);
+
+router.use(verifyToken);
 
 // CRUD & Basics
-router.post('/', UserController.createUser);
 router.get('/:email', UserController.getUserByEmail);
 router.delete('/:id', UserController.deleteUser);
 
@@ -19,7 +23,11 @@ router.delete('/:id/chats/:chatId', UserController.deleteChatOfUser);
 // Premium
 router.put('/:id/premium', UserController.updatePremium);
 
+// Test unlock when abonded
+router.put('/:id/unlock-test', verifyToken, UserController.unlockTestSession);
+
 module.exports = router;
+
 
 //#TODO need to add chat to user.
 // #TODO need to had tests to user 

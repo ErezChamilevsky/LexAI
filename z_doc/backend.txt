@@ -21,3 +21,10 @@ Adding the JWT and Google auth. Generated another jest test and passed it. So fo
 behaves as expected.
 task - add flag of test and chat in order to not do one chat in multiple windows, and more than one
 test in the same time.
+task - add date for premium 
+
+13/12/2025
+adding test_flag logic so user cannot make two tests in same time, adding test_flag jest test.
+adding to user and chat verify token usage. adding to the test.spec cases of violate verification and it passed.
+task - #TODO add date to premium
+#TODO add flag to chat

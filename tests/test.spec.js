@@ -293,4 +293,101 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
             expect(dbCheck).toBeNull();
         });
     });
+    // ------------------------------------------------------------------------
+    // FLOW 6: Security & Authorization Attacks (New!)
+    // ------------------------------------------------------------------------
+    describe('Flow 6: Security & Authorization Attacks', () => {
+        let attackerId, attackerToken;
+        let victimId, victimToken;
+
+        beforeEach(async () => {
+            // 1. Create Victim (The innocent user)
+            const victim = new User({ name: "Victim", email: "victim@test.com" });
+            victim.languages.push({ language_code: 'fr' });
+            await victim.save();
+            victimId = victim._id;
+            victimToken = generateToken(victimId, "victim@test.com");
+
+            // 2. Create Attacker (The hacker)
+            const attacker = new User({ name: "Attacker", email: "hacker@test.com" });
+            await attacker.save();
+            attackerId = attacker._id;
+            attackerToken = generateToken(attackerId, "hacker@test.com");
+        });
+
+        // --- ATTACK 1: DELETING ANOTHER USER ---
+        it('should block User A from deleting User B', async () => {
+            const res = await request(app)
+                .delete(`/api/users/${victimId}`) // Attacker targets Victim's ID
+                .set('Authorization', `Bearer ${attackerToken}`); // But uses Attacker's token
+
+            // Should fail with 403 Forbidden
+            expect(res.status).toBe(403);
+            expect(res.body.message).toMatch(/access denied|unauthorized/i);
+
+            // Verify Victim still exists
+            const victimCheck = await User.findById(victimId);
+            expect(victimCheck).not.toBeNull();
+        });
+
+        // --- ATTACK 2: VIEWING ANOTHER PROFILE ---
+        it('should block User A from viewing User B profile (Data Leak)', async () => {
+            const res = await request(app)
+                .get(`/api/users/victim@test.com`) // Attacker tries to read Victim's email
+                .set('Authorization', `Bearer ${attackerToken}`);
+
+            expect(res.status).toBe(403);
+            expect(res.body.message).toMatch(/access denied/i);
+        });
+
+        // --- ATTACK 3: MODIFYING ANOTHER USER'S LANGUAGES ---
+        it('should block User A from adding a language to User B', async () => {
+            const res = await request(app)
+                .post(`/api/users/${victimId}/languages`)
+                .set('Authorization', `Bearer ${attackerToken}`)
+                .send({ language_code: 'es', overall_level: 'A1' });
+
+            expect(res.status).toBe(403);
+
+            // Verify Victim was not modified
+            const victimCheck = await User.findById(victimId);
+            expect(victimCheck.languages).toHaveLength(1); // Still only has 'fr'
+        });
+
+        // --- ATTACK 4: SELF-PROMOTION TO PREMIUM (Using another ID) ---
+        it('should block User A from upgrading User B to Premium', async () => {
+            const res = await request(app)
+                .put(`/api/users/${victimId}/premium`)
+                .set('Authorization', `Bearer ${attackerToken}`)
+                .send({ is_premium: true });
+
+            expect(res.status).toBe(403);
+
+            const victimCheck = await User.findById(victimId);
+            expect(victimCheck.is_premium).toBe(false);
+        });
+
+        // --- ATTACK 5: ACCESSING OTHERS' CHATS ---
+        it('should block User A from reading User B chats', async () => {
+            // First, create a chat for Victim
+            // We use Mongoose directly to simulate existing data
+            const chat = new Chat({
+                user_id: victimId,
+                language_code: 'fr',
+                topic: 'Secret Plans',
+                messages: []
+            });
+            await chat.save();
+            const chatId = chat._id;
+
+            // Attacker tries to fetch this chat
+            const res = await request(app)
+                .get(`/api/chats/${chatId}`)
+                .set('Authorization', `Bearer ${attackerToken}`);
+
+            // The controller logic we added: if (chat.user_id !== req.user._id) -> 403
+            expect(res.status).toBe(403);
+            expect(res.body.message).toMatch(/unauthorized/i);
+        });
+    });
 });
