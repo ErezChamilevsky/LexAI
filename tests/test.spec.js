@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken');
 process.env.JWT_SECRET = 'test_secret_key';
 
 // --- MOCK GOOGLE AUTH LIBRARY ---
-// This prevents the test from actually trying to contact Google servers
 jest.mock('google-auth-library', () => {
     return {
         OAuth2Client: jest.fn().mockImplementation(() => {
@@ -31,14 +30,13 @@ const Test = require('../backend/models/test.model');
 
 let mongoServer;
 
-// Use a consistent secret for testing
 process.env.JWT_SECRET = 'test_secret_key';
 
 // --- HELPER: Generate Token ---
-// Since we are creating users directly in DB for setup, we need a way to mint tokens for them
-const generateToken = (userId, email, isPremium = false) => {
+// CHANGED: Removed isPremium param. The backend checks the DB date, not the token claim.
+const generateToken = (userId, email) => {
     return jwt.sign(
-        { _id: userId, email, is_premium: isPremium },
+        { _id: userId, email },
         process.env.JWT_SECRET,
         { expiresIn: '1h' }
     );
@@ -73,10 +71,8 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
     // ------------------------------------------------------------------------
     describe('Flow 1: User Lifecycle', () => {
         it('should login via Google (Mocked) and fetch profile', async () => {
-            // 1. Login with "Google" (Simulated)
-            // The controller calls AuthService.loginWithGoogle, which calls our Mock
             const loginRes = await request(app)
-                .post('/auth/google') // CHANGED: Now uses Auth route
+                .post('/auth/google')
                 .send({ token: "fake_google_token" });
 
             expect(loginRes.status).toBe(200);
@@ -86,11 +82,9 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
             const authToken = loginRes.body.token;
             const userId = loginRes.body.user._id;
 
-            // 2. Fetch User by Email (Protected Route)
-            // We must attach the token we just got
             const getRes = await request(app)
                 .get(`/api/users/mocked@example.com`)
-                .set('Authorization', `Bearer ${authToken}`); // ADDED HEADER
+                .set('Authorization', `Bearer ${authToken}`);
 
             expect(getRes.status).toBe(200);
             expect(getRes.body._id).toBe(userId);
@@ -106,12 +100,9 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
         let token;
 
         beforeEach(async () => {
-            // Setup: Create User directly in DB to save time
             const user = new User({ name: "Jane", email: "jane@test.com" });
             await user.save();
             userId = user._id;
-
-            // Generate valid JWT for this user
             token = generateToken(userId, "jane@test.com");
         });
 
@@ -119,7 +110,7 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
             // 1. Add 1st Language (Success)
             await request(app)
                 .post(`/api/users/${userId}/languages`)
-                .set('Authorization', `Bearer ${token}`) // ADDED HEADER
+                .set('Authorization', `Bearer ${token}`)
                 .send({ language_code: "es", overall_level: "A1" })
                 .expect(200);
 
@@ -133,17 +124,16 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
             expect(failRes.body.message).toMatch(/limit/i);
 
             // 3. Upgrade to Premium (Logic Update)
-            // We update the DB directly, OR use the endpoint. 
-            // NOTE: If we use the endpoint, we need a new token if the token stores "is_premium".
-            // However, your middleware likely checks DB or the current token.
-            // Let's update DB and regenerate token to be safe if you store premium status in JWT.
-            await User.findByIdAndUpdate(userId, { is_premium: true });
-            const premiumToken = generateToken(userId, "jane@test.com", true);
+            // CHANGED: We now set a date in the future instead of a boolean flag
+            const futureDate = new Date();
+            futureDate.setMonth(futureDate.getMonth() + 1); // Add 1 month
+
+            await User.findByIdAndUpdate(userId, { premium_expires_at: futureDate });
 
             // 4. Add 2nd Language (Success - Premium Limit is 3)
             await request(app)
                 .post(`/api/users/${userId}/languages`)
-                .set('Authorization', `Bearer ${premiumToken}`) // Use Premium Token
+                .set('Authorization', `Bearer ${token}`)
                 .send({ language_code: "fr", overall_level: "A1" })
                 .expect(200);
 
@@ -163,7 +153,6 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
 
         beforeEach(async () => {
             const user = new User({ name: "Chatter", email: "chat@test.com" });
-            // Add language directly
             user.languages.push({ language_code: langCode });
             await user.save();
             userId = user._id;
@@ -177,7 +166,6 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
                     .post('/api/chats')
                     .set('Authorization', `Bearer ${token}`)
                     .send({
-                        // Removed userId from body, controller now takes it from token
                         languageCode: langCode, message: "Hello", topic: `Topic ${i}`
                     });
                 expect(res.status).toBe(201);
@@ -195,11 +183,13 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
 
             // 3. Verify Continue Chat (Get Chat By ID)
             const userInDb = await User.findById(userId);
+            // Accessing nested chat ID depends on your exact schema structure logic
+            // Assuming standard push behavior
             const chatId = userInDb.languages[0].chats[0];
 
             const chatRes = await request(app)
                 .get(`/api/chats/${chatId}`)
-                .set('Authorization', `Bearer ${token}`); // Must be authorized owner
+                .set('Authorization', `Bearer ${token}`);
 
             expect(chatRes.status).toBe(200);
             expect(chatRes.body.topic).toBe("Topic 1");
@@ -233,8 +223,6 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
             const testId = testRes.body._id;
 
             // 2. Grade the Test
-            // NOTE: If grading is an ADMIN action, you might need an Admin Token.
-            // Assuming for now regular users or a system trigger does this.
             await request(app)
                 .put(`/api/tests/${testId}/grade`)
                 .set('Authorization', `Bearer ${token}`)
@@ -275,7 +263,7 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
             // 2. Get Dashboard
             const dashRes = await request(app)
                 .get(`/api/users/${email}`)
-                .set('Authorization', `Bearer ${token}`); // Protected
+                .set('Authorization', `Bearer ${token}`);
 
             expect(dashRes.status).toBe(200);
             expect(dashRes.body.languages[0].corrections[0]).toBe(false);
@@ -293,54 +281,53 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
             expect(dbCheck).toBeNull();
         });
     });
+
     // ------------------------------------------------------------------------
-    // FLOW 6: Security & Authorization Attacks (New!)
+    // FLOW 6: Security & Authorization Attacks
     // ------------------------------------------------------------------------
     describe('Flow 6: Security & Authorization Attacks', () => {
         let attackerId, attackerToken;
         let victimId, victimToken;
 
         beforeEach(async () => {
-            // 1. Create Victim (The innocent user)
+            // 1. Create Victim
             const victim = new User({ name: "Victim", email: "victim@test.com" });
             victim.languages.push({ language_code: 'fr' });
             await victim.save();
             victimId = victim._id;
             victimToken = generateToken(victimId, "victim@test.com");
 
-            // 2. Create Attacker (The hacker)
+            // 2. Create Attacker
             const attacker = new User({ name: "Attacker", email: "hacker@test.com" });
             await attacker.save();
             attackerId = attacker._id;
             attackerToken = generateToken(attackerId, "hacker@test.com");
         });
 
-        // --- ATTACK 1: DELETING ANOTHER USER ---
+        // --- ATTACK 1 ---
         it('should block User A from deleting User B', async () => {
             const res = await request(app)
-                .delete(`/api/users/${victimId}`) // Attacker targets Victim's ID
-                .set('Authorization', `Bearer ${attackerToken}`); // But uses Attacker's token
+                .delete(`/api/users/${victimId}`)
+                .set('Authorization', `Bearer ${attackerToken}`);
 
-            // Should fail with 403 Forbidden
             expect(res.status).toBe(403);
             expect(res.body.message).toMatch(/access denied|unauthorized/i);
 
-            // Verify Victim still exists
             const victimCheck = await User.findById(victimId);
             expect(victimCheck).not.toBeNull();
         });
 
-        // --- ATTACK 2: VIEWING ANOTHER PROFILE ---
-        it('should block User A from viewing User B profile (Data Leak)', async () => {
+        // --- ATTACK 2 ---
+        it('should block User A from viewing User B profile', async () => {
             const res = await request(app)
-                .get(`/api/users/victim@test.com`) // Attacker tries to read Victim's email
+                .get(`/api/users/victim@test.com`)
                 .set('Authorization', `Bearer ${attackerToken}`);
 
             expect(res.status).toBe(403);
             expect(res.body.message).toMatch(/access denied/i);
         });
 
-        // --- ATTACK 3: MODIFYING ANOTHER USER'S LANGUAGES ---
+        // --- ATTACK 3 ---
         it('should block User A from adding a language to User B', async () => {
             const res = await request(app)
                 .post(`/api/users/${victimId}/languages`)
@@ -349,9 +336,8 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
 
             expect(res.status).toBe(403);
 
-            // Verify Victim was not modified
             const victimCheck = await User.findById(victimId);
-            expect(victimCheck.languages).toHaveLength(1); // Still only has 'fr'
+            expect(victimCheck.languages).toHaveLength(1);
         });
 
         // --- ATTACK 4: SELF-PROMOTION TO PREMIUM (Using another ID) ---
@@ -359,18 +345,18 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
             const res = await request(app)
                 .put(`/api/users/${victimId}/premium`)
                 .set('Authorization', `Bearer ${attackerToken}`)
-                .send({ is_premium: true });
+                // CHANGED: Sending months instead of is_premium
+                .send({ months: 12 });
 
             expect(res.status).toBe(403);
 
             const victimCheck = await User.findById(victimId);
-            expect(victimCheck.is_premium).toBe(false);
+            // CHANGED: Checking that the date is still null (or expired/past)
+            expect(victimCheck.premium_expires_at).toBeNull();
         });
 
-        // --- ATTACK 5: ACCESSING OTHERS' CHATS ---
+        // --- ATTACK 5 ---
         it('should block User A from reading User B chats', async () => {
-            // First, create a chat for Victim
-            // We use Mongoose directly to simulate existing data
             const chat = new Chat({
                 user_id: victimId,
                 language_code: 'fr',
@@ -380,12 +366,10 @@ describe('Integrated User Stories (with JWT & Google Auth)', () => {
             await chat.save();
             const chatId = chat._id;
 
-            // Attacker tries to fetch this chat
             const res = await request(app)
                 .get(`/api/chats/${chatId}`)
                 .set('Authorization', `Bearer ${attackerToken}`);
 
-            // The controller logic we added: if (chat.user_id !== req.user._id) -> 403
             expect(res.status).toBe(403);
             expect(res.body.message).toMatch(/unauthorized/i);
         });

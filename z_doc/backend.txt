@@ -4,7 +4,7 @@ Gemini says to add the max 3 chats per language in the controller logic.
 
 Asked from Gemini test, gave jest test.
 For now - all routes, sevices, controller, and schemas from Gemini. It prettey falters.
-#TASK - Change sever, try to load the mongodb and then run the jest. Commit and push only when code is fine.
+#task - Change sever, try to load the mongodb and then run the jest. Commit and push only when code is fine.
 
 09/12/25
 User model - adding setting to the user - user language - corrections.
@@ -14,17 +14,22 @@ change the get user to be by email.
 moved the chats to be under userlanguage.
 added user stories and jest test for them (and more flow) - passed. seems that the backend without integration finished -
 therefore backend_without_integration merged to master.
-task - add jwt token
+#task - add jwt token
 
 11/12/25
 Adding the JWT and Google auth. Generated another jest test and passed it. So for now the backend 
 behaves as expected.
-task - add flag of test and chat in order to not do one chat in multiple windows, and more than one
+#task - add flag of test and chat in order to not do one chat in multiple windows, and more than one
 test in the same time.
-task - add date for premium 
+#task - add date for premium 
 
 13/12/2025
 adding test_flag logic so user cannot make two tests in same time, adding test_flag jest test.
 adding to user and chat verify token usage. adding to the test.spec cases of violate verification and it passed.
-task - #TODO add date to premium
-#TODO add flag to chat
+#task - add date to premium
+
+15/12/2025
+the logic of premium has been changed - instead of flag using a date - more simple to update and no need to run 
+a script to update users every night.
+jest tests of both user_stories and auth have been changed in order to work in this setup.
+in case of same chat in few tabs - decided to not prevent but update in real time the chat.

@@ -45,9 +45,9 @@ const UserSchema = new Schema({
         lowercase: true,
         trim: true
     },
-    is_premium: {
-        type: Boolean,
-        default: false
+    premium_expires_at: {
+        type: Date,
+        default: null
     },
     is_taking_test: {
         type: Boolean,
