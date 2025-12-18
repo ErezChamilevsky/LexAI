@@ -27,6 +27,51 @@ function cleanAndParseJSON(responseText) {
         throw new Error("AI Service Error: Invalid JSON response format.");
     }
 }
+/**
+ * INTERFACE ONLY: Generates the very first message to start a chat.
+ * * The AI acts as the initiator here, inviting the user to speak about the topic.
+ * * @param {string} languageCode - The target language.
+ * @param {string} userLevel - The user's proficiency level.
+ * @param {string} topic - The chosen topic for the conversation.
+ * @returns {Promise<string>} The initial greeting/question from the AI.
+ */
+async function generateInitialChat(languageCode, userLevel, topic) {
+    // ---------------------------------------------------------
+    // BLACK BOX: Implementation to be added in external service
+    // ---------------------------------------------------------
+    throw new Error("LLM Service: generateInitialChat is not yet implemented.");
+
+    // Expected Return: "Bonjour ! Je suis ravi de parler de 'Voyage' avec vous. Où aimeriez-vous aller ?"
+}
+
+/**
+ * INTERFACE ONLY: Generates a chat response and updates the conversation summary.
+ * * This is a black-box declaration. The implementation will reside in a separate service/microservice later.
+ * * @param {string} languageCode - The target language (e.g., "es", "fr").
+ * @param {string} userLevel - The user's proficiency level (e.g., "A2", "B1").
+ * @param {string} topic - The topic of the conversation.
+ * @param {string} currentSummary - The running summary of the conversation up to this point.
+ * @param {Array<{role: string, content: string}>} lastMessages - The last 6 messages for context.
+ * @param {string} userMessage - The latest message sent by the user.
+ * * @returns {Promise<{ response_text: string, new_summary: string }>} 
+ * Returns an object containing the AI's reply and the updated summary.
+ */
+async function generateChatResponse(languageCode, userLevel, topic, currentSummary, lastMessages, userMessage) {
+    // ---------------------------------------------------------
+    // BLACK BOX: Implementation to be added in external service
+    // ---------------------------------------------------------
+
+    // For development purposes, you might return a mock object here, 
+    // but per your request, this is just the declaration.
+    throw new Error("LLM Service: generateChatResponse is not yet implemented.");
+
+    /* Expected Return Structure:
+    return {
+        response_text: "Hola! ¿Cómo estás hoy?",
+        new_summary: "The user greeted the assistant. The assistant asked how the user is doing."
+    };
+    */
+}
 
 /**
  * Generates a list of questions for a specific test type and level.
@@ -164,5 +209,7 @@ async function evaluateTestResults(testContext, currentLevel) {
 
 module.exports = {
     generateTestQuestions,
-    evaluateTestResults
+    evaluateTestResults,
+    generateChatResponse,
+    generateInitialChat
 };

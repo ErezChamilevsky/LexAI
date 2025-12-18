@@ -166,9 +166,16 @@ const endTestSession = async (userId) => {
     );
 };
 
+const getUserCurrentLevel = async (userId, languageCode) => {
+    const user = await getUserById(userId);
+    // For now, assuming you can fetch the user:
+    const lang = user.languages.find(l => l.language_code === languageCode);
+    return lang ? lang.overall_level : 'A1';
+};
+
 module.exports = {
     createUser, getUserByEmail, updateLanguageLevel, addLanguageToUser,
     addTestToUser, updatePremium, addChatToUser, deleteUser,
     deleteLanguage, deleteChatOfUser, updateCorrections,
-    startTestSession, endTestSession, getUserById
+    startTestSession, endTestSession, getUserById, getUserCurrentLevel
 };

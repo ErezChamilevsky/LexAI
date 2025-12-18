@@ -34,10 +34,14 @@ a script to update users every night.
 jest tests of both user_stories and auth have been changed in order to work in this setup.
 in case of same chat in few tabs - decided to not prevent but update in real time the chat.
 
-16/12/2026
+16/12/2025
 #task - add integration. start with llm then go to tts stt
 
 17/12/2025
 adding llm integration to test logic. 
 noitce - first user's test leads to overall test to determine the language level.
-$task - the prompt still not 100%, need to change the parser of the llm response. 
+$task - the prompts are still not 100%, need to change the parser of the llm response. 
+
+18/12/2025
+Adding summary field to chat schema.
+adding llm integration to chat - there is no prompt yet.

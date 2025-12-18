@@ -2,13 +2,6 @@ const Test = require('../models/test.model');
 const UserService = require('./user.service');
 const LLMService = require('./llm.service');
 
-const getUserCurrentLevel = async (userId, languageCode) => {
-    const user = await UserService.getUserById(userId);
-    // For now, assuming you can fetch the user:
-    const lang = user.languages.find(l => l.language_code === languageCode);
-    return lang ? lang.overall_level : 'A1';
-};
-
 
 // Helper to handle creation logic
 const createGenericTest = async (userId, languageCode, type) => {

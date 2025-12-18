@@ -4,9 +4,9 @@ const ChatService = require('../services/chat.service');
 const createNewChat = async (req, res) => {
     try {
         const userId = req.user._id;
-        const { languageCode, topic, message } = req.body;
+        const { languageCode, topic } = req.body;
 
-        const chat = await ChatService.createNewChat(userId, languageCode, message, topic);
+        const chat = await ChatService.createNewChat(userId, languageCode, topic);
         res.status(201).json(chat);
     } catch (error) {
         res.status(400).json({ message: error.message });

@@ -43,6 +43,10 @@ const ChatSchema = new Schema({
     // Optional topic for the chat
     topic: { type: String },
 
+    summary: {
+        type: String,
+    },
+
     // Array of message subdocuments
     messages: [MessageSchema]
 }, {
