@@ -33,3 +33,6 @@ the logic of premium has been changed - instead of flag using a date - more simp
 a script to update users every night.
 jest tests of both user_stories and auth have been changed in order to work in this setup.
 in case of same chat in few tabs - decided to not prevent but update in real time the chat.
+
+16/12/2026
+#task - add integration. start with llm then go to tts stt

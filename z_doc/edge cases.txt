@@ -1,6 +1,10 @@
 opening multiple windows of the same chat/test - not giving the option to make few test stimulatingly and chats
 chat - not preventing but planning how to update in real time in both tabs
 
+after user have stored chat/language - give him the option to delete the oldest and make new one.
+
+first test of user - evaluate his level.
+
 react2shell
 
 Important Note on "Abandoned" Tests
@@ -12,3 +16,5 @@ To fix this, you should add a specific endpoint to "Abort" a test, or ensure you
         // In a real production app, this specific route should be restricted to ADMINS only
         // or handled via a server-side payment webhook (e.g., Stripe), not a direct API call.
         // For now, checking Identity prevents them from upgrading *others*.
+
+https by nginx
