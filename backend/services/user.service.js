@@ -19,6 +19,10 @@ const getUserByEmail = async (mail) => {
     return await User.findOne({ email: mail }).populate('languages.tests').populate('languages.chats');
 };
 
+const getUserById = async (user_id) => {
+    return await User.findOne({ _id: user_id }).populate('languages.tests').populate('languages.chats');
+};
+
 // 3. Update Language Level
 const updateLanguageLevel = async (userId, languageCode, skillType, newLevel) => {
     const user = await User.findById(userId);
@@ -166,5 +170,5 @@ module.exports = {
     createUser, getUserByEmail, updateLanguageLevel, addLanguageToUser,
     addTestToUser, updatePremium, addChatToUser, deleteUser,
     deleteLanguage, deleteChatOfUser, updateCorrections,
-    startTestSession, endTestSession
+    startTestSession, endTestSession, getUserById
 };

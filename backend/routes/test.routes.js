@@ -6,12 +6,12 @@ const verifyToken = require('../middleware/auth.middleware');
 router.use(verifyToken);
 
 // Test Creation
-router.post('/writing', TestController.createWritingTest);   
-router.post('/reading', TestController.createReadingTest);   
-router.post('/speaking', TestController.createSpeakingTest); 
-router.post('/placement', TestController.createOverallTest); 
+router.post('/writing', TestController.createWritingTest);
+router.post('/reading', TestController.createReadingTest);
+router.post('/speaking', TestController.createSpeakingTest);
+router.post('/placement', TestController.createOverallTest);
 
 // Grading
-router.put('/:id/grade', TestController.setGradeByTestID);
+router.post('/:testId/submit', verifyToken, TestController.submitTest);
 
 module.exports = router;

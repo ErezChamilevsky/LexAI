@@ -36,3 +36,8 @@ in case of same chat in few tabs - decided to not prevent but update in real tim
 
 16/12/2026
 #task - add integration. start with llm then go to tts stt
+
+17/12/2025
+adding llm integration to test logic. 
+noitce - first user's test leads to overall test to determine the language level.
+$task - the prompt still not 100%, need to change the parser of the llm response. 

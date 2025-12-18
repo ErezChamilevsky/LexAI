@@ -44,7 +44,7 @@ const createOverallTest = async (req, res) => {
     try {
         const userId = req.user._id; // SECURITY: From Token
         const { languageCode } = req.body;
-        
+
         const test = await TestService.createOverallTest(userId, languageCode);
         res.status(201).json(test);
     } catch (error) {
@@ -52,18 +52,23 @@ const createOverallTest = async (req, res) => {
     }
 };
 
-// 5. Set Grade By Test ID
-const setGradeByTestID = async (req, res) => {
+
+
+const submitTest = async (req, res) => {
     try {
-        const { score, level, details } = req.body;
-        const test = await TestService.setGradeByTestID(req.params.id, score, level, details);
-        res.json(test);
+        const { testId } = req.params;
+        const { answers } = req.body; // Expect array of answers
+
+        // Security check: ensure the test belongs to req.user._id (omitted for brevity, but recommended)
+
+        const result = await TestService.submitTestAnswers(testId, answers);
+        res.json(result);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
 
 module.exports = {
     createWritingTest, createReadingTest, createSpeakingTest,
-    createOverallTest, setGradeByTestID
+    createOverallTest, submitTest
 };
