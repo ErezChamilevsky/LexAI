@@ -45,3 +45,4 @@ $task - the prompts are still not 100%, need to change the parser of the llm res
 18/12/2025
 Adding summary field to chat schema.
 adding llm integration to chat - there is no prompt yet.
+#task - move to frontend
