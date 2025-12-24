@@ -1,2 +1,8 @@
 21/12/25
 taking a kind of design, adding a edit area of colors. Not finished colors.
+
+23/12/25
+created new branch of frontend. gave Gemini the kind of design and asked for full
+implementation for all pages, did great work.
+for now still there colorpanel.
+#task - start step by step connecting the backend. for now feels that front is fine.
