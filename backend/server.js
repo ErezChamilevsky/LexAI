@@ -29,7 +29,7 @@ mongoose.connect(connectionString)
 app.use('/api/chats', chatRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tests', testRoutes);
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 
 // --- Base Route (Health Check) ---
 app.get('/', (req, res) => {

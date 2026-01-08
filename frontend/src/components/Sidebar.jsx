@@ -7,7 +7,7 @@ const hexToRgb = (hex) => {
     return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255, 255, 255';
 }
 
-const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, theme }) => {
+const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, theme, onLogout }) => {
     const [hoveredItem, setHoveredItem] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -60,7 +60,7 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, theme }) => {
                     // Mobile: Fixed full height
                     "fixed top-0 left-0 h-full w-64 md:w-auto",
                     // WIDTH LOGIC: Set to 250px for desktop
-                    isOpen ? "translate-x-0 md:translate-x-0 md:w-[250px]" : "-translate-x-full md:translate-x-0 md:w-20"
+                    isOpen ? "translate-x-0 md:translate-x-0 md:w-[230px]" : "-translate-x-full md:translate-x-0 md:w-20"
                 )}
             >
                 {/* Header */}
@@ -120,7 +120,13 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, theme }) => {
                 </nav>
 
                 <div className="p-4 mb-2">
-                    <button className="w-full flex items-center gap-4 px-4 py-3 rounded-xl opacity-60 hover:opacity-100 hover:bg-red-50 hover:text-red-500 transition-all">
+                    <button 
+                        onClick={() => {
+                            if (window.confirm("Are you sure you want to log out?")) {
+                                onLogout(); // Triggers the useAuth logout logic
+                            }
+                        }}
+                    className="w-full flex items-center gap-4 px-4 py-3 rounded-xl opacity-60 hover:opacity-100 hover:bg-red-50 hover:text-red-500 transition-all">
                         <LogOut size={20} />
                         <span className={clsx(!isOpen && "md:hidden")}>Log out</span>
                     </button>
