@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'react';
 
-export const useChatScroll = (dependency) => {
+export const useChatScroll = (...dependencies) => {
     const scrollRef = useRef(null);
 
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [dependency]);
+    }, dependencies); // Pass the array directly
 
     return scrollRef;
 };

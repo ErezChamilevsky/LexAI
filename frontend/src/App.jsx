@@ -7,11 +7,25 @@ import LandingPage from './pages/LandingPage'; // Import the new Landing Page
 import ColorPanel from './components/ColorPanel';
 import { useAuth } from './features/auth/hooks/useAuth'; // Import the Auth hook
 
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+
 function App() {
   const { isAuthenticated, handleGoogleLogin, isLoading, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [isColorPanelOpen, setIsColorPanelOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('home');
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Determine active tab based on current path
+  const getActiveTab = (path) => {
+    if (path.startsWith('/chat')) return 'chat';
+    if (path.startsWith('/test')) return 'test';
+    if (path === '/') return 'home';
+    return '';
+  };
+
+  const activeTab = getActiveTab(location.pathname);
 
   const [theme, setTheme] = useState({
     bgFrom: '#fed7f4',
@@ -30,16 +44,6 @@ function App() {
 
   const updateTheme = (key, value) => {
     setTheme(prev => ({ ...prev, [key]: value }));
-  };
-
- 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'home': return <Home theme={theme} />;
-      case 'chat': return <Chat theme={theme} />;
-      case 'test': return <Test theme={theme} />;
-      default: return <Home theme={theme} />;
-    }
   };
 
   // Show loading state while checking for stored token
@@ -66,13 +70,24 @@ function App() {
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={(id) => {
+          if (id === 'home') navigate('/');
+          else if (id === 'chat') navigate('/chat/general'); // Keeping this for backward compatibility if called directly
+          else if (id === 'practice') navigate('/chat/general'); // New ID from Sidebar
+          else if (id === 'test') navigate('/test');
+          else if (id === 'progress') navigate('/progress'); // Todo
+        }}
         theme={theme}
         onLogout={logout}
       />
 
       <main className="flex-1 h-full relative min-w-0 flex flex-col overflow-hidden transition-all duration-300">
-        {renderContent()}
+        <Routes>
+          <Route path="/" element={<Home theme={theme} />} />
+          <Route path="/chat/:id" element={<Chat theme={theme} />} />
+          <Route path="/test" element={<Test theme={theme} />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
       </main>
 
       <ColorPanel

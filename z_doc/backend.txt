@@ -46,3 +46,7 @@ $task - the prompts are still not 100%, need to change the parser of the llm res
 Adding summary field to chat schema.
 adding llm integration to chat - there is no prompt yet.
 #task - move to frontend
+
+10/01/26
+added to the language schema in the user last_active for language in order to make
+a on log in language.

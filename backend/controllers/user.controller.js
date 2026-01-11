@@ -174,7 +174,20 @@ const unlockTestSession = async (req, res) => {
     }
 };
 
+const updateLanguageLastActive = async (req, res) => {
+    try {
+        if (req.params.id !== req.user._id) {
+            return res.status(403).json({ message: 'Unauthorized.' });
+        }
+        const user = await UserService.updateLanguageLastActive(req.params.id, req.params.code);
+        res.json(user);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createUser, getUserByEmail, updateLanguageLevel, addLanguageToUser,
-    updatePremium, deleteUser, deleteLanguage, deleteChatOfUser, updateCorrections, unlockTestSession
+    updatePremium, deleteUser, deleteLanguage, deleteChatOfUser, updateCorrections, unlockTestSession,
+    updateLanguageLastActive
 };

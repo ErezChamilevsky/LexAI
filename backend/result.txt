@@ -1,0 +1,4 @@
+TypeError: UserService.getUserLevel is not a function
+    at Object.createNewChat (C:\LexAI\backend\services\chat.service.js:18:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async run (C:\LexAI\backend\test_service.js:26:22)

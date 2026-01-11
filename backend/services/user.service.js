@@ -55,7 +55,11 @@ const addLanguageToUser = async (userId, languageData) => {
     const exists = user.languages.find(l => l.language_code === languageData.language_code);
     if (exists) throw new Error('User already has this language');
 
-    user.languages.push(languageData);
+    // Add with initial last_active_at
+    user.languages.push({
+        ...languageData,
+        last_active_at: new Date() // Auto-set active on creation
+    });
     return await user.save();
 };
 
@@ -173,9 +177,26 @@ const getUserCurrentLevel = async (userId, languageCode) => {
     return lang ? lang.overall_level : 'A1';
 };
 
+// 14. Update Language Last Active
+const updateLanguageLastActive = async (userId, languageCode) => {
+    // 1. Update the specific language's last_active_at
+    const user = await User.findOneAndUpdate(
+        { _id: userId, "languages.language_code": languageCode },
+        {
+            $set: {
+                "languages.$.last_active_at": new Date()
+            }
+        },
+        { new: true }
+    );
+    if (!user) throw new Error('User or language not found');
+    return user;
+};
+
 module.exports = {
     createUser, getUserByEmail, updateLanguageLevel, addLanguageToUser,
     addTestToUser, updatePremium, addChatToUser, deleteUser,
     deleteLanguage, deleteChatOfUser, updateCorrections,
-    startTestSession, endTestSession, getUserById, getUserCurrentLevel
+    startTestSession, endTestSession, getUserById, getUserCurrentLevel,
+    updateLanguageLastActive
 };

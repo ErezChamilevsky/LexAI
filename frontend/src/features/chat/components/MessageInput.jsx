@@ -17,13 +17,22 @@ export const MessageInput = ({ onSendMessage, disabled }) => {
             <div className="bg-white/60 backdrop-blur-xl border border-white/50 rounded-2xl p-2 shadow-lg flex items-end gap-2">
                 <textarea
                     value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSubmit(e)}
+                    onChange={(e) => {
+                        setText(e.target.value);
+                        e.target.style.height = 'auto';
+                        e.target.style.height = `${e.target.scrollHeight}px`;
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSubmit(e);
+                        }
+                    }}
                     placeholder="Type a message..."
                     className="flex-1 bg-transparent border-none 
                     resize-none py-3 max-h-32 text-slate-700 
                     placeholder-slate-400 text-sm md:text-base 
-                    outline-none focus:outline-none ring-0 focus:ring-0 focus:shadow-none"
+                    outline-none focus:outline-none ring-0 focus:ring-0 focus:shadow-none custom-scrollbar"
                     rows="1"
                 />
                 <button type="button" className="p-3 text-slate-400 hover:text-pink-500 rounded-xl transition-all">

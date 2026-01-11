@@ -1,16 +1,8 @@
-const { GoogleGenAI } = require("@google/genai");
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // The client gets the API key from the environment variable `GEMINI_API_KEY`.
-let ai;
-
-function getClient() {
-    if (!ai) {
-        ai = new GoogleGenAI({});
-    }
-    return ai;
-}
-
-
+const api_key = process.env.GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(api_key);
 
 /**
  * HELPER: Clean and Parse JSON from LLM Response
@@ -36,12 +28,38 @@ function cleanAndParseJSON(responseText) {
  * @returns {Promise<string>} The initial greeting/question from the AI.
  */
 async function generateInitialChat(languageCode, userLevel, topic) {
-    // ---------------------------------------------------------
-    // BLACK BOX: Implementation to be added in external service
-    // ---------------------------------------------------------
-    throw new Error("LLM Service: generateInitialChat is not yet implemented.");
+    const prompt = `
+    You are a friendly language tutor. The student is learning ${languageCode} and is at ${userLevel} level.
+    The topic of conversation is "${topic}".
+    
+    ACTION: Generate a single, engaging opening question or greeting to start the conversation about this topic.
+    LANGUAGE: Output ONLY in ${languageCode}.
+    DIFFICulty: Appropriate for ${userLevel} level. Simple and clear.
+    `;
 
-    // Expected Return: "Bonjour ! Je suis ravi de parler de 'Voyage' avec vous. Où aimeriez-vous aller ?"
+    try {
+
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            generationConfig: {
+                responseMimeType: "application/json",
+            },
+        });
+
+        const response = await model.generateContent(prompt);
+
+        return response.response.text().trim();
+    } catch (error) {
+        console.error("LLM Init Error:", error);
+        // Fallback if AI fails
+        const fallbacks = {
+            'es': 'Hola! ¿Cómo estás?',
+            'fr': 'Bonjour! Comment ça va?',
+            'de': 'Hallo! Wie geht es dir?',
+            'default': 'Hello! How are you?'
+        };
+        return fallbacks[languageCode] || fallbacks['default'];
+    }
 }
 
 /**
@@ -57,20 +75,51 @@ async function generateInitialChat(languageCode, userLevel, topic) {
  * Returns an object containing the AI's reply and the updated summary.
  */
 async function generateChatResponse(languageCode, userLevel, topic, currentSummary, lastMessages, userMessage) {
-    // ---------------------------------------------------------
-    // BLACK BOX: Implementation to be added in external service
-    // ---------------------------------------------------------
+    // 1. Build Context String
+    const historyText = lastMessages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n');
 
-    // For development purposes, you might return a mock object here, 
-    // but per your request, this is just the declaration.
-    throw new Error("LLM Service: generateChatResponse is not yet implemented.");
+    const prompt = `
+    You are a helpful and patient language tutor teaching ${languageCode}. 
+    Student Level: ${userLevel}.
+    Topic: ${topic}.
+    Previous Summary: ${currentSummary || "None"}
+    
+    Recent Conversation:
+    ${historyText}
+    USER: ${userMessage}
+    
+    TASK:
+    1. Respond to the user naturally in ${languageCode}. Correct them gently if they make major mistakes, but prioritize conversation flow.
+    2. Update the conversation summary in English.
+    
+    OUTPUT JSON FORMAT:
+    {
+      "response_text": "Your reply in ${languageCode}...",
+      "new_summary": "Updated summary in English..."
+    }
+    `;
 
-    /* Expected Return Structure:
-    return {
-        response_text: "Hola! ¿Cómo estás hoy?",
-        new_summary: "The user greeted the assistant. The assistant asked how the user is doing."
-    };
-    */
+    try {
+
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            generationConfig: {
+                responseMimeType: "application/json",
+            },
+        });
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        return cleanAndParseJSON(text);
+
+    } catch (error) {
+        console.error("LLM Chat Error:", error);
+        return {
+            response_text: "I'm having trouble connecting right now. Can you say that again?",
+            new_summary: currentSummary
+        };
+    }
 }
 
 /**
@@ -129,13 +178,14 @@ async function generateTestQuestions(languageCode, type, currentLevel) {
     `;
 
     // 3. Call AI
-    const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash", 
-        contents: generatePrompt,
-        config: {
-            responseMimeType: "application/json" // Enforce JSON output mode if supported
-        }
+    const model = genAI.getGenerativeModel({
+        model: "gemini-2.5-flash",
+        generationConfig: {
+            responseMimeType: "application/json",
+        },
     });
+
+    const response = await model.generateContent(generatePrompt);
 
     // 4. Extract and Parse
     // Note: The specific property to access text varies by SDK version. 
@@ -194,20 +244,21 @@ async function evaluateTestResults(testContext, currentLevel) {
     `;
 
     // 3. Call AI
-    const response = await ai.models.generateContent({
+    const model = genAI.getGenerativeModel({
         model: "gemini-2.5-flash",
-        contents: evaluate_prompt,
-        config: {
-            responseMimeType: "application/json"
-        }
+        generationConfig: {
+            responseMimeType: "application/json",
+        },
     });
+
+    const response = await model.generateContent(evaluate_prompt);
 
     // 4. Extract and Parse
     const textResponse = response.response.text();
     return cleanAndParseJSON(textResponse);
 }
 
-module.exports = {
+export {
     generateTestQuestions,
     evaluateTestResults,
     generateChatResponse,

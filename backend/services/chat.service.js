@@ -3,7 +3,7 @@ const UserService = require('./user.service'); // To link back to user
 const LLMService = require('./llm.service');
 
 // 1. Create New Chat
-const createNewChat = async (userId, languageCode, initialMessage, topic) => {
+const createNewChat = async (userId, languageCode, topic) => {
 
     // BUSINESS LOGIC: Check chat limit per language
     const existingChatsCount = await Chat.countDocuments({
@@ -15,7 +15,7 @@ const createNewChat = async (userId, languageCode, initialMessage, topic) => {
         throw new Error('You have reached the limit of 3 active chats for this language.');
     }
 
-    const userLevel = await UserService.getUserLevel(userId, languageCode) || 'B1';
+    const userLevel = await UserService.getUserCurrentLevel(userId, languageCode) || 'B1';
 
     // C. CALL LLM: Generate the starter message
     const aiInitialMessage = await LLMService.generateInitialChat(
@@ -138,8 +138,24 @@ const addMessageToChat = async (chatId, role, content) => {
     return chat;
 };
 
+const deleteChat = async (userId, chatId) => {
+    return await UserService.deleteChatOfUser(userId, chatId);
+};
+
+const updateChatTopic = async (userId, chatId, newTopic) => {
+    const chat = await Chat.findOneAndUpdate(
+        { _id: chatId, user_id: userId },
+        { topic: newTopic },
+        { new: true }
+    );
+    if (!chat) throw new Error("Chat not found or unauthorized");
+    return chat;
+};
+
 module.exports = {
     createNewChat,
     getChatByID,
-    addMessageToChat
+    addMessageToChat,
+    deleteChat,
+    updateChatTopic
 };
