@@ -55,7 +55,11 @@ const addLanguageToUser = async (userId, languageData) => {
     const exists = user.languages.find(l => l.language_code === languageData.language_code);
     if (exists) throw new Error('User already has this language');
 
-    user.languages.push(languageData);
+    // Add with initial last_active_at
+    user.languages.push({
+        ...languageData,
+        last_active_at: new Date() // Auto-set active on creation
+    });
     return await user.save();
 };
 
@@ -173,9 +177,50 @@ const getUserCurrentLevel = async (userId, languageCode) => {
     return lang ? lang.overall_level : 'A1';
 };
 
+const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
+const getNextLevel = (currentLevel) => {
+    const currentIndex = CEFR_LEVELS.indexOf(currentLevel);
+    if (currentIndex === -1 || currentIndex === CEFR_LEVELS.length - 1) return null;
+    return CEFR_LEVELS[currentIndex + 1];
+};
+
+const isReadyForLevelMixing = async (userId, languageCode, currentLevel) => {
+    // 1. Get graded tests for this language and level
+    const gradedLevelTests = await Test.find({
+        user_id: userId,
+        language_code: languageCode,
+        language_level: currentLevel,
+        status: 'graded'
+    }).sort({ date_taken: -1 }).limit(2);
+
+    if (gradedLevelTests.length < 2) return false;
+
+    // 2. Check if average score >= 80
+    const avgScore = gradedLevelTests.reduce((acc, t) => acc + t.score, 0) / gradedLevelTests.length;
+    return avgScore >= 80;
+};
+
+// 14. Update Language Last Active
+const updateLanguageLastActive = async (userId, languageCode) => {
+    // 1. Update the specific language's last_active_at
+    const user = await User.findOneAndUpdate(
+        { _id: userId, "languages.language_code": languageCode },
+        {
+            $set: {
+                "languages.$.last_active_at": new Date()
+            }
+        },
+        { new: true }
+    );
+    if (!user) throw new Error('User or language not found');
+    return user;
+};
+
 module.exports = {
     createUser, getUserByEmail, updateLanguageLevel, addLanguageToUser,
     addTestToUser, updatePremium, addChatToUser, deleteUser,
     deleteLanguage, deleteChatOfUser, updateCorrections,
-    startTestSession, endTestSession, getUserById, getUserCurrentLevel
+    startTestSession, endTestSession, getUserById, getUserCurrentLevel,
+    updateLanguageLastActive, getNextLevel, isReadyForLevelMixing
 };

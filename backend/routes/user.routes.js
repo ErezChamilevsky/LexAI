@@ -16,6 +16,7 @@ router.post('/:id/languages', UserController.addLanguageToUser); // Add new lang
 router.delete('/:id/languages/:code', UserController.deleteLanguage); // Delete language
 router.put('/:id/languages/level', UserController.updateLanguageLevel); // Update skill/overall level
 router.put('/:id/languages/corrections', UserController.updateCorrections); // Toggle corrections
+router.patch('/:id/languages/:code/active', UserController.updateLanguageLastActive); // Set active language
 
 // Chat Management (User specific)
 router.delete('/:id/chats/:chatId', UserController.deleteChatOfUser);

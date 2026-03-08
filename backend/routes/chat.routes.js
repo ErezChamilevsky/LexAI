@@ -14,5 +14,11 @@ router.get('/:id', ChatController.getChatByID);
 // Add a message to an existing chat
 router.post('/:id/messages', ChatController.addMessageToChat);
 
+// Delete chat
+router.delete('/:id', ChatController.deleteChat);
+
+// Update chat (e.g. topic)
+router.patch('/:id', ChatController.updateChatTopic);
+
 
 module.exports = router;

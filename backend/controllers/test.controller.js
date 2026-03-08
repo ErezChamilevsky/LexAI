@@ -9,6 +9,7 @@ const createWritingTest = async (req, res) => {
         const test = await TestService.createWritingTest(userId, languageCode);
         res.status(201).json(test);
     } catch (error) {
+        console.error("Test Controller Error:", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -22,6 +23,7 @@ const createReadingTest = async (req, res) => {
         const test = await TestService.createReadingTest(userId, languageCode);
         res.status(201).json(test);
     } catch (error) {
+        console.error("Test Controller Error:", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -35,6 +37,7 @@ const createSpeakingTest = async (req, res) => {
         const test = await TestService.createSpeakingTest(userId, languageCode);
         res.status(201).json(test);
     } catch (error) {
+        console.error("Test Controller Error:", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -48,6 +51,7 @@ const createOverallTest = async (req, res) => {
         const test = await TestService.createOverallTest(userId, languageCode);
         res.status(201).json(test);
     } catch (error) {
+        console.error("Test Controller Error:", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -64,6 +68,7 @@ const submitTest = async (req, res) => {
         const result = await TestService.submitTestAnswers(testId, answers);
         res.json(result);
     } catch (error) {
+        console.error("Test Controller Error:", error);
         res.status(500).json({ message: error.message });
     }
 };

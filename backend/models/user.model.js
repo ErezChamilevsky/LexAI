@@ -30,7 +30,11 @@ const UserLanguageSchema = new Schema({
     corrections: [{
         type: Boolean,
         default: true
-    }]
+    }],
+    last_active_at: {
+        type: Date,
+        default: Date.now
+    }
 }, { _id: true });
 
 const UserSchema = new Schema({
@@ -57,7 +61,7 @@ const UserSchema = new Schema({
         type: [UserLanguageSchema],
         validate: [arrayLimit, '{PATH} exceeds the limit of 3 languages']
     }
-    
+
 }, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });

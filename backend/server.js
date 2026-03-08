@@ -1,4 +1,5 @@
-require('dotenv').config(); // Load environment variables from .env file
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, './config/.env.local') });
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors'); // Middleware to allow frontend to talk to backend
@@ -22,7 +23,7 @@ const connectionString = process.env.CONNECTION_STRING || 'mongodb://localhost:2
 mongoose.connect(connectionString)
     .then(() => console.log('✅ Connected'))
     .catch(err => console.error('❌ Error', err));
-    
+
 
 // --- Routes Mounting ---
 // This prefixes all routes. Example: POST /api/users/signup

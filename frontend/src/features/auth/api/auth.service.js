@@ -1,11 +1,9 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_BASE_URL;
+import api from '../../../services/api';
 
 export const authService = {
     // Sends Google idToken to backend
     loginWithGoogle: async (googleToken) => {
-        const response = await axios.post(`${API_URL}/auth/google`, {
+        const response = await api.post(`/auth/google`, {
             token: googleToken
         });
         return response.data; // Returns { token, user }
