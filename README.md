@@ -9,8 +9,13 @@
 - **Language Level Assessment**: Take tests to determine your current proficiency level (A1-C2).
 - **Progress Tracking**: Monitor your learning journey via a comprehensive dashboard.
 - **Multi-Language Support**: Learn and track progress in multiple languages simultaneously.
-- **Premium Subscription**: Unlock advanced features and unlimited practice with a premium membership.
 - **Secure Authentication**: easy sign-up and login with Google Authentication.
+
+
+
+https://github.com/user-attachments/assets/2b7e228d-da17-4587-81e8-8f67d1758b9a
+
+
 
 ## 🛠️ Tech Stack
 
@@ -27,8 +32,6 @@
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Routing**: [React Router](https://reactrouter.com/)
 - **HTTP Client**: [Axios](https://axios-http.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Markdown Rendering**: [React Markdown](https://github.com/remarkjs/react-markdown)
 
 ## 📂 Project Structure
 
