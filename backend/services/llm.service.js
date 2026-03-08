@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // The client gets the API key from the environment variable `GEMINI_API_KEY`.
 const api_key = process.env.GEMINI_API_KEY;
@@ -40,7 +40,7 @@ async function generateInitialChat(languageCode, userLevel, topic) {
     try {
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
+            model: "models/gemini-2.5-flash",
             generationConfig: {
                 responseMimeType: "application/json",
             },
@@ -102,7 +102,7 @@ async function generateChatResponse(languageCode, userLevel, topic, currentSumma
     try {
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
+            model: "models/gemini-2.5-flash",
             generationConfig: {
                 responseMimeType: "application/json",
             },
@@ -125,7 +125,7 @@ async function generateChatResponse(languageCode, userLevel, topic, currentSumma
 /**
  * Generates a list of questions for a specific test type and level.
  */
-async function generateTestQuestions(languageCode, type, currentLevel) {
+async function generateTestQuestions(languageCode, type, currentLevel, mixWithLevel = null) {
 
     // 1. Construct the specific prompt based on type
     let specificInstructions = "";
@@ -140,20 +140,30 @@ async function generateTestQuestions(languageCode, type, currentLevel) {
         `;
     }
     else if (type === 'reading') {
+        const levelInstruction = mixWithLevel
+            ? `MIXED: 2 questions should be at ${currentLevel} and 1 question at ${mixWithLevel}.`
+            : `DIFFICULTY: All questions must be at ${currentLevel} level.`;
+
         specificInstructions = `
-        TASK: Generate a **Reading Test** for ${languageCode} at **${currentLevel}** level.
+        TASK: Generate a **Reading Test** for ${languageCode}.
         - CONTENT: Create a short reading passage (approx 100-150 words) suitable for ${currentLevel}.
         - QUESTIONS: Create 3 multiple-choice comprehension questions based on that text.
+        - ${levelInstruction}
         - FORMAT: 
           - Item 1: "question_text" contains the PASSAGE + Question 1.
           - Item 2 & 3: "question_text" contains only the question (referring to the passage).
         `;
     }
     else if (['writing', 'speaking'].includes(type)) {
+        const levelInstruction = mixWithLevel
+            ? `MIXED: 2 prompts should be at ${currentLevel} and 1 prompt at ${mixWithLevel}.`
+            : `DIFFICULTY: All prompts must be at ${currentLevel} level.`;
+
         specificInstructions = `
-        TASK: Generate a **${type.toUpperCase()} Test** for ${languageCode} at **${currentLevel}** level.
-        - CONTENT: Create exactly 1 open-ended prompt.
-        - TOPIC: Relevant to daily life, suitable for ${currentLevel} proficiency.
+        TASK: Generate a **${type.toUpperCase()} Test** for ${languageCode}.
+        - CONTENT: Create exactly 3 diverse open-ended prompts.
+        - TOPIC: Relevant to daily life.
+        - ${levelInstruction}
         - OPTIONS: Do not provide options. Return an empty array for "options".
         `;
     }
@@ -179,7 +189,7 @@ async function generateTestQuestions(languageCode, type, currentLevel) {
 
     // 3. Call AI
     const model = genAI.getGenerativeModel({
-        model: "gemini-2.5-flash",
+        model: "models/gemini-2.5-flash",
         generationConfig: {
             responseMimeType: "application/json",
         },
@@ -245,7 +255,7 @@ async function evaluateTestResults(testContext, currentLevel) {
 
     // 3. Call AI
     const model = genAI.getGenerativeModel({
-        model: "gemini-2.5-flash",
+        model: "models/gemini-2.5-flash",
         generationConfig: {
             responseMimeType: "application/json",
         },
@@ -255,10 +265,20 @@ async function evaluateTestResults(testContext, currentLevel) {
 
     // 4. Extract and Parse
     const textResponse = response.response.text();
-    return cleanAndParseJSON(textResponse);
+    const parsed = cleanAndParseJSON(textResponse);
+
+    // Defensive: Clean the level to match enum
+    const allowedLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+    if (parsed.level && !allowedLevels.includes(parsed.level)) {
+        // Try to find if any allowedLevel is inside the string
+        const cleaned = allowedLevels.find(l => parsed.level.includes(l));
+        parsed.level = cleaned || currentLevel; // Fallback to current level or A1
+    }
+
+    return parsed;
 }
 
-export {
+module.exports = {
     generateTestQuestions,
     evaluateTestResults,
     generateChatResponse,

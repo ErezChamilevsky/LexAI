@@ -19,5 +19,11 @@ export const testService = {
     submitTest: async (testId, answers) => {
         const response = await api.post(`/tests/${testId}/submit`, { answers });
         return response.data;
+    },
+
+    // Abandon/Unlock test session
+    abandonTest: async (userId) => {
+        const response = await api.put(`/users/${userId}/unlock-test`);
+        return response.data;
     }
 };

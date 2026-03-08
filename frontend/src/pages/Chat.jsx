@@ -20,17 +20,14 @@ const ChatPage = () => {
 
     // Redirect 'general', 'new', or undefined to a real chat
     useEffect(() => {
-        console.log("ChatPage Effect Triggered:", { id, isUserLoading, userLoaded: !!user, initRef: initRef.current });
+        if (isUserLoading || !user) return; // Wait for user
 
-        if (isUserLoading) return; // Wait for user
-        if (!user || !user.languages || user.languages.length === 0) {
-            console.log("User missing or no languages:", user);
-            return;
-        }
+        // console.log("ChatPage Effect:", { id, initRef: initRef.current });
+
+        if (!user.languages || user.languages.length === 0) return;
 
         // Reset initRef if we are on a specific chat page (so returning to 'new' works later)
         if (id !== 'new' && id !== 'general') {
-            console.log("Resetting initRef (on chat page)");
             initRef.current = null;
             return;
         }
@@ -125,14 +122,22 @@ const ChatPage = () => {
             >
                 <div className="mt-auto space-y-4 w-full">
                     {messages.map((msg, index) => (
-                        <ChatMessage key={msg._id || msg.id || index} msg={msg} />
+                        <ChatMessage
+                            key={msg._id || msg.id || index}
+                            msg={msg}
+                            languageCode={chatMeta?.language_code || 'en-US'}
+                        />
                     ))}
                     {/* Visual cue that AI is thinking */}
                     {isTyping && <TypingIndicator />}
                 </div>
             </div>
 
-            <MessageInput onSendMessage={sendMessage} disabled={isChatLoading || isTyping} />
+            <MessageInput
+                onSendMessage={sendMessage}
+                disabled={isChatLoading || isTyping}
+                languageCode={chatMeta?.language_code || (user?.languages?.[0]?.language_code) || 'en-US'}
+            />
         </div>
     );
 };

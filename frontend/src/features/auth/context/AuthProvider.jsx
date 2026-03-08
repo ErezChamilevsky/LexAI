@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { authService } from '../api/auth.service';
 import api from '../../../services/api';
 
@@ -13,8 +13,8 @@ export const AuthProvider = ({ children }) => {
     const refreshUser = useCallback(async () => {
         try {
             const storedUser = JSON.parse(localStorage.getItem('user'));
-            // If we have a user in state, usage that email, otherwise usage stored
-            const email = user?.email || storedUser?.email;
+            // Use stored email to avoid dependency on 'user' state object itself
+            const email = storedUser?.email;
 
             if (!email) return;
 
@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error("Failed to refresh user:", error);
         }
-    }, [user]);
+    }, []); // Removed user dependency
 
     // Init Auth
     useEffect(() => {
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
         setToken(null);
     };
 
-    const value = {
+    const value = useMemo(() => ({
         user,
         token,
         isLoading,
@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
         handleGoogleLogin,
         logout,
         isAuthenticated: !!token
-    };
+    }), [user, token, isLoading, refreshUser, handleGoogleLogin]);
 
     return (
         <AuthContext.Provider value={value}>

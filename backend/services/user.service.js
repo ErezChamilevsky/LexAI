@@ -177,6 +177,30 @@ const getUserCurrentLevel = async (userId, languageCode) => {
     return lang ? lang.overall_level : 'A1';
 };
 
+const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
+const getNextLevel = (currentLevel) => {
+    const currentIndex = CEFR_LEVELS.indexOf(currentLevel);
+    if (currentIndex === -1 || currentIndex === CEFR_LEVELS.length - 1) return null;
+    return CEFR_LEVELS[currentIndex + 1];
+};
+
+const isReadyForLevelMixing = async (userId, languageCode, currentLevel) => {
+    // 1. Get graded tests for this language and level
+    const gradedLevelTests = await Test.find({
+        user_id: userId,
+        language_code: languageCode,
+        language_level: currentLevel,
+        status: 'graded'
+    }).sort({ date_taken: -1 }).limit(2);
+
+    if (gradedLevelTests.length < 2) return false;
+
+    // 2. Check if average score >= 80
+    const avgScore = gradedLevelTests.reduce((acc, t) => acc + t.score, 0) / gradedLevelTests.length;
+    return avgScore >= 80;
+};
+
 // 14. Update Language Last Active
 const updateLanguageLastActive = async (userId, languageCode) => {
     // 1. Update the specific language's last_active_at
@@ -198,5 +222,5 @@ module.exports = {
     addTestToUser, updatePremium, addChatToUser, deleteUser,
     deleteLanguage, deleteChatOfUser, updateCorrections,
     startTestSession, endTestSession, getUserById, getUserCurrentLevel,
-    updateLanguageLastActive
+    updateLanguageLastActive, getNextLevel, isReadyForLevelMixing
 };
